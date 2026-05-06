@@ -8,20 +8,20 @@ let currentProjects = [];
 let currentProjectId = null;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Set default date to today
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('noteDate').value = today;
-    
+
     // Load groups
     loadGroups();
-    
+
     // Setup form handlers
     setupFormHandlers();
-    
+
     // Setup image selection
     setupImageSelection();
-    
+
     // Load user info (for team display)
     loadUserInfo();
 
@@ -45,7 +45,7 @@ function toggleSidebar() {
 function toggleGroupList() {
     const groupList = document.getElementById('groupList');
     const collapseIcon = document.getElementById('collapseIcon');
-    
+
     if (groupList.classList.contains('collapsed')) {
         groupList.classList.remove('collapsed');
         collapseIcon.textContent = '▼'; // Down means expanded
@@ -56,20 +56,20 @@ function toggleGroupList() {
 }
 
 // Reset sidebar visibility on resize
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     const sidebar = document.querySelector('.sidebar');
     if (window.innerWidth > 768) {
         sidebar.style.display = ''; // Remove inline style to revert to CSS
     } else {
-         // On mobile, let it follow the toggle state or default hidden
-         if (sidebar.style.display === '') {
-             sidebar.style.display = 'none';
-         }
+        // On mobile, let it follow the toggle state or default hidden
+        if (sidebar.style.display === '') {
+            sidebar.style.display = 'none';
+        }
     }
 });
 
 // Run on load to set initial state correctly if starting on mobile
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     const sidebar = document.querySelector('.sidebar');
     if (window.innerWidth <= 768) {
         sidebar.style.display = 'none';
@@ -83,7 +83,7 @@ function showToast(message, type = 'success') {
     toast.textContent = message;
     toast.className = 'toast ' + type;
     toast.classList.add('show');
-    
+
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
@@ -96,8 +96,13 @@ function showModal(modalId) {
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('show');
-    
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove('show');
+
     // Clear edit modal data
     if (modalId === 'editNoteModal') {
         editSelectedFiles = [];
@@ -105,6 +110,8 @@ function closeModal(modalId) {
         document.getElementById('editImagePreviewList').innerHTML = '';
         document.getElementById('editNoteImages').value = '';
         document.getElementById('editCameraInput').value = '';
+    } else if (modalId === 'changePasswordModal') {
+        modal.remove();
     }
 }
 
@@ -156,13 +163,13 @@ function switchTab(tabName) {
         tab.classList.remove('active');
     });
     document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-    
+
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
     document.getElementById(tabName + 'Tab').classList.add('active');
-    
+
     // Load content if browsing
     if (tabName === 'browse') {
         loadBrowseContent();
@@ -175,10 +182,10 @@ async function loadGroups() {
     try {
         const response = await fetch('/api/groups');
         currentGroups = await response.json();
-        
+
         // Sort groups alphabetically by name
         currentGroups.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
-        
+
         renderGroupList();
         updateGroupSelects();
     } catch (error) {
@@ -188,7 +195,7 @@ async function loadGroups() {
 
 function renderGroupList() {
     const groupList = document.getElementById('groupList');
-    
+
     if (currentGroups.length === 0) {
         groupList.innerHTML = `
             <div class="empty-state">
@@ -198,7 +205,7 @@ function renderGroupList() {
         `;
         return;
     }
-    
+
     groupList.innerHTML = currentGroups.map(group => `
         <div class="group-item ${selectedGroupId === group.id ? 'active' : ''}" 
              onclick="selectGroup(${group.id})" data-id="${group.id}">
@@ -217,25 +224,25 @@ function renderGroupList() {
 
 function updateGroupSelects() {
     const selects = ['noteGroup', 'browseGroup', 'editNoteGroup'];
-    
+
     selects.forEach(selectId => {
         const select = document.getElementById(selectId);
         if (!select) return;
-        
+
         const currentValue = select.value;
         const isOptional = selectId === 'browseGroup';
-        
-        select.innerHTML = isOptional 
+
+        select.innerHTML = isOptional
             ? '<option value="">全部品类</option>'
             : '<option value="">请选择品类</option>';
-        
+
         currentGroups.forEach(group => {
             const option = document.createElement('option');
             option.value = group.id;
             option.textContent = group.name;
             select.appendChild(option);
         });
-        
+
         // Restore previous value if it still exists
         if (currentValue && currentGroups.some(g => g.id == currentValue)) {
             select.value = currentValue;
@@ -250,21 +257,21 @@ function selectGroup(groupId) {
 
 async function createGroup() {
     const name = document.getElementById('newGroupName').value.trim();
-    
+
     if (!name) {
         showToast('请输入品类名称', 'error');
         return;
     }
-    
+
     try {
         const response = await fetch('/api/groups', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             showToast('品类创建成功');
             closeModal('createGroupModal');
@@ -280,21 +287,21 @@ async function createGroup() {
 async function updateGroup() {
     const groupId = document.getElementById('editGroupId').value;
     const name = document.getElementById('editGroupName').value.trim();
-    
+
     if (!name) {
         showToast('请输入品类名称', 'error');
         return;
     }
-    
+
     try {
         const response = await fetch(`/api/groups/${groupId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             showToast('品类更新成功');
             closeModal('editGroupModal');
@@ -311,12 +318,12 @@ async function deleteGroup(groupId) {
     if (!confirm('确定要删除这个品类吗？品类内的所有笔记和图片都将被删除。')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`/api/groups/${groupId}`, {
             method: 'DELETE'
         });
-        
+
         if (response.ok) {
             showToast('品类删除成功');
             if (selectedGroupId === groupId) {
@@ -365,11 +372,11 @@ async function createThumbnail(file) {
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
-            
+
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
             img.close(); // Release memory immediately
-            
+
             return new Promise((resolve, reject) => {
                 canvas.toBlob((blob) => {
                     if (blob) {
@@ -383,14 +390,14 @@ async function createThumbnail(file) {
             console.warn('createImageBitmap failed, falling back to Image()', e);
         }
     }
-    
+
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
         const img = new Image();
-        
+
         img.onload = () => {
             URL.revokeObjectURL(url);
-            
+
             const MAX_WIDTH = 150;
             const MAX_HEIGHT = 150;
             let width = img.width;
@@ -411,10 +418,10 @@ async function createThumbnail(file) {
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
-            
+
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            
+
             canvas.toBlob((blob) => {
                 if (blob) {
                     resolve(URL.createObjectURL(blob));
@@ -423,12 +430,12 @@ async function createThumbnail(file) {
                 }
             }, file.type, 0.7);
         };
-        
+
         img.onerror = () => {
             URL.revokeObjectURL(url);
             reject(new Error('Image load failed'));
         };
-        
+
         img.src = url;
     });
 }
@@ -541,25 +548,25 @@ function setupImageSelection() {
     const editImagesInput = document.getElementById('editNoteImages');
     const editCameraInput = document.getElementById('editCameraInput');
 
-    noteImagesInput.addEventListener('change', async function(e) {
+    noteImagesInput.addEventListener('change', async function (e) {
         const files = Array.from(e.target.files);
         await processNoteFiles(files);
         e.target.value = '';
     });
 
-    noteCameraInput.addEventListener('change', async function(e) {
+    noteCameraInput.addEventListener('change', async function (e) {
         const files = Array.from(e.target.files);
         await processNoteFiles(files);
         e.target.value = '';
     });
 
-    editImagesInput.addEventListener('change', async function(e) {
+    editImagesInput.addEventListener('change', async function (e) {
         const files = Array.from(e.target.files);
         await processEditFiles(files);
         e.target.value = '';
     });
 
-    editCameraInput.addEventListener('change', async function(e) {
+    editCameraInput.addEventListener('change', async function (e) {
         const files = Array.from(e.target.files);
         await processEditFiles(files);
         e.target.value = '';
@@ -614,7 +621,7 @@ function removeEditSelectedImage(index) {
 
 function generateUUID() {
     if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
@@ -623,31 +630,31 @@ function generateUUID() {
 async function uploadChunkedFile(file, onProgress) {
     const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB Chunk
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    
+
     // UUID for this file upload session
     const fileUuid = generateUUID();
-    
+
     for (let i = 0; i < totalChunks; i++) {
         const start = i * CHUNK_SIZE;
         const end = Math.min(file.size, start + CHUNK_SIZE);
         const chunk = file.slice(start, end);
-        
+
         const chunkFormData = new FormData();
         chunkFormData.append('file', chunk);
         chunkFormData.append('dzuuid', fileUuid);
         chunkFormData.append('dzchunkindex', i);
         chunkFormData.append('dztotalchunkcount', totalChunks); // Ensure consistent casing
-        
+
         try {
             const response = await fetch('/api/upload/chunk', {
                 method: 'POST',
                 body: chunkFormData
             });
-            
+
             if (!response.ok) {
                 throw new Error(`Upload failed for chunk ${i}`);
             }
-            
+
             if (onProgress) {
                 onProgress((i + 1) / totalChunks * 100);
             }
@@ -656,7 +663,7 @@ async function uploadChunkedFile(file, onProgress) {
             throw error;
         }
     }
-    
+
     // Merge
     const mergeResponse = await fetch('/api/upload/merge', {
         method: 'POST',
@@ -667,11 +674,11 @@ async function uploadChunkedFile(file, onProgress) {
             dztotalchunkcount: totalChunks
         })
     });
-    
+
     if (!mergeResponse.ok) {
         throw new Error('Merge failed');
     }
-    
+
     return await mergeResponse.json();
 }
 
@@ -701,7 +708,7 @@ async function processFilesForUpload(files) {
             totalSmallSize += file.size;
         }
     }
-    
+
     return { uploadedChunks, smallFiles };
 }
 
@@ -709,50 +716,50 @@ async function processFilesForUpload(files) {
 
 function setupFormHandlers() {
     // Note form
-    document.getElementById('noteForm').addEventListener('submit', async function(e) {
+    document.getElementById('noteForm').addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         const content = document.getElementById('noteContent').value.trim();
         const date = document.getElementById('noteDate').value;
         const groupId = document.getElementById('noteGroup').value;
-        
+
         if (!content && selectedFiles.length === 0) {
             showToast('请输入笔记内容或上传图片', 'error');
             return;
         }
-        
+
         if (!groupId) {
             showToast('请选择品类', 'error');
             return;
         }
-        
+
         const submitButton = document.querySelector('#noteForm button[type="submit"]');
         const originalButtonText = submitButton.textContent;
         submitButton.disabled = true;
         submitButton.textContent = '上传中...';
-        
+
         try {
             // Process files (using shared chunked logic)
             const filesToUpload = selectedFiles.map(item => item.file);
             const { uploadedChunks, smallFiles } = await processFilesForUpload(filesToUpload);
-            
+
             const formData = new FormData();
             formData.append('content', content);
             formData.append('date', date);
             formData.append('group_id', groupId);
             formData.append('uploaded_chunks', JSON.stringify(uploadedChunks));
-            
+
             smallFiles.forEach(file => {
                 formData.append('images', file);
             });
-            
+
             const response = await fetch('/api/notes', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const data = await response.json();
-            
+
             if (response.ok) {
                 showToast('笔记保存成功');
                 document.getElementById('noteContent').value = '';
@@ -784,7 +791,7 @@ async function loadNotes(groupId) {
         if (groupId) {
             url += `?group_id=${groupId}`;
         }
-        
+
         const response = await fetch(url);
         const notes = await response.json();
         renderNotes(notes);
@@ -795,7 +802,7 @@ async function loadNotes(groupId) {
 
 function renderNotes(notes) {
     const notesList = document.getElementById('notesList');
-    
+
     if (notes.length === 0) {
         notesList.innerHTML = `
             <div class="empty-state">
@@ -805,23 +812,23 @@ function renderNotes(notes) {
         `;
         return;
     }
-    
+
     notesList.innerHTML = notes.map(note => {
-        const imagesHtml = note.images && note.images.length > 0 
+        const imagesHtml = note.images && note.images.length > 0
             ? `<div class="note-card-images">
                 ${note.images.map(img => {
-                    // Use thumbnail if available, otherwise fallback to original
-                    const thumbSrc = img.thumbnail ? `/static/uploads/${img.thumbnail}` : `/static/uploads/${img.filename}`;
-                    return `
+                // Use thumbnail if available, otherwise fallback to original
+                const thumbSrc = img.thumbnail ? `/static/uploads/${img.thumbnail}` : `/static/uploads/${img.filename}`;
+                return `
                     <div class="note-image-item" onclick="showImageModal('/static/uploads/${img.filename}', '${escapeHtml(img.original_filename)}')">
                         <img src="${thumbSrc}" alt="${escapeHtml(img.original_filename)}" loading="lazy" onerror="this.onerror=null;this.src='/static/uploads/${img.filename}'">
                     </div>
                 `}).join('')}
                </div>`
             : '';
-        
+
         const authorHtml = note.author ? `<span>👤 ${escapeHtml(note.author)}</span>` : '';
-        
+
         return `
             <div class="note-card" data-id="${note.id}">
                 <div class="note-card-header">
@@ -850,21 +857,21 @@ async function showEditNoteModal(noteId) {
         const response = await fetch('/api/notes');
         const notes = await response.json();
         const note = notes.find(n => n.id === noteId);
-        
+
         if (note) {
             document.getElementById('editNoteId').value = note.id;
             document.getElementById('editNoteDate').value = note.date;
             document.getElementById('editNoteGroup').value = note.group_id;
             document.getElementById('editNoteContent').value = note.content;
-            
+
             // Reset edit state
             editSelectedFiles = [];
             editKeepImageIds = note.images ? note.images.map(img => img.id) : [];
-            
+
             // Show existing images
             renderExistingImages(note.images || []);
             renderEditImagePreviews();
-            
+
             showModal('editNoteModal');
         }
     } catch (error) {
@@ -874,17 +881,17 @@ async function showEditNoteModal(noteId) {
 
 function renderExistingImages(images) {
     const container = document.getElementById('editExistingImages');
-    
+
     if (images.length === 0) {
         container.innerHTML = '<p style="color: #6c757d;">暂无图片</p>';
         return;
     }
-    
+
     container.innerHTML = images.map(img => {
         const isKept = editKeepImageIds.includes(img.id);
         // Use thumbnail if available, otherwise fallback to original
         const thumbSrc = img.thumbnail ? `/static/uploads/${img.thumbnail}` : `/static/uploads/${img.filename}`;
-        
+
         return `
             <div class="existing-image-item ${isKept ? '' : 'removed'}" data-id="${img.id}">
                 <img src="${thumbSrc}" alt="${escapeHtml(img.original_filename)}" loading="lazy" onerror="this.onerror=null;this.src='/static/uploads/${img.filename}'">
@@ -901,7 +908,7 @@ function toggleExistingImage(imageId) {
     } else {
         editKeepImageIds.push(imageId);
     }
-    
+
     // Update UI
     const item = document.querySelector(`.existing-image-item[data-id="${imageId}"]`);
     if (item) {
@@ -916,45 +923,45 @@ async function updateNote() {
     const content = document.getElementById('editNoteContent').value.trim();
     const date = document.getElementById('editNoteDate').value;
     const groupId = document.getElementById('editNoteGroup').value;
-    
+
     if (!content && editKeepImageIds.length === 0 && editSelectedFiles.length === 0) {
         showToast('请输入笔记内容或保留/添加图片', 'error');
         return;
     }
-    
+
     if (!groupId) {
         showToast('请选择品类', 'error');
         return;
     }
-    
+
     const submitButton = document.querySelector('#editNoteModal .btn-primary'); // Assuming it's the primary button
     const originalButtonText = submitButton.textContent;
     submitButton.disabled = true;
     submitButton.textContent = '更新中...';
-    
+
     try {
         // Process new files (using shared chunked logic)
         const filesToUpload = editSelectedFiles.map(item => item.file);
         const { uploadedChunks, smallFiles } = await processFilesForUpload(filesToUpload);
-        
+
         const formData = new FormData();
         formData.append('content', content);
         formData.append('date', date);
         formData.append('group_id', groupId);
         formData.append('keep_images', JSON.stringify(editKeepImageIds));
         formData.append('uploaded_chunks', JSON.stringify(uploadedChunks));
-        
+
         smallFiles.forEach(file => {
             formData.append('images', file);
         });
-        
+
         const response = await fetch(`/api/notes/${noteId}`, {
             method: 'PUT',
             body: formData
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             showToast('笔记更新成功');
             closeModal('editNoteModal');
@@ -984,12 +991,12 @@ async function deleteNote(noteId) {
     if (!confirm('确定要删除这条笔记吗？关联的图片也将被删除。')) {
         return false;
     }
-    
+
     try {
         const response = await fetch(`/api/notes/${noteId}`, {
             method: 'DELETE'
         });
-        
+
         if (response.ok) {
             showToast('笔记删除成功');
             loadBrowseContent();
@@ -1052,7 +1059,7 @@ function formatNoteContentWithLinks(content) {
 }
 
 // Close modals on outside click
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (e.target.classList.contains('modal')) {
         const modalId = e.target.id;
         closeModal(modalId);
@@ -1060,7 +1067,7 @@ document.addEventListener('click', function(e) {
 });
 
 // Close modals on Escape key
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal.show').forEach(modal => {
             closeModal(modal.id);
@@ -1074,7 +1081,7 @@ async function loadUserInfo() {
     try {
         const response = await fetch('/api/user/info');
         const user = await response.json();
-        
+
         if (user.team_name) {
             const teamBadge = document.getElementById('teamBadge');
             if (teamBadge) {
@@ -1175,7 +1182,52 @@ async function switchProject() {
 
 // ============ Password Change ============
 
+function ensureChangePasswordModal() {
+    let modal = document.getElementById('changePasswordModal');
+
+    if (modal) {
+        return modal;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'changePasswordModal';
+    modal.setAttribute('autocomplete', 'off');
+    modal.setAttribute('data-lpignore', 'true');
+    modal.setAttribute('data-1p-ignore', 'true');
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改密码</h3>
+                <button class="close-btn" onclick="closeModal('changePasswordModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="oldPassword">原密码</label>
+                    <input type="password" id="oldPassword" placeholder="请输入原密码" autocomplete="current-password" data-lpignore="true" data-1p-ignore="true">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">新密码</label>
+                    <input type="password" id="newPassword" placeholder="请输入新密码" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true">
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">确认新密码</label>
+                    <input type="password" id="confirmNewPassword" placeholder="请再次输入新密码" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('changePasswordModal')">取消</button>
+                <button class="btn btn-primary" onclick="changePassword()">保存</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    return modal;
+}
+
 function showChangePasswordModal() {
+    ensureChangePasswordModal();
     document.getElementById('oldPassword').value = '';
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmNewPassword').value = '';
@@ -1186,31 +1238,31 @@ async function changePassword() {
     const oldPassword = document.getElementById('oldPassword').value;
     const newPassword = document.getElementById('newPassword').value;
     const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-    
+
     if (!oldPassword || !newPassword || !confirmNewPassword) {
         showToast('请填写所有字段', 'error');
         return;
     }
-    
+
     if (newPassword !== confirmNewPassword) {
         showToast('两次新密码不一致', 'error');
         return;
     }
-    
+
     if (newPassword.length < 4) {
         showToast('新密码至少需要4个字符', 'error');
         return;
     }
-    
+
     try {
         const response = await fetch('/api/change-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ old_password: oldPassword, new_password: newPassword })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             showToast('密码修改成功');
             closeModal('changePasswordModal');
@@ -1226,7 +1278,7 @@ async function changePassword() {
 
 // Tab switching for admin
 const originalSwitchTab = switchTab;
-switchTab = function(tabName) {
+switchTab = function (tabName) {
     syncGroupSelectionOnTabSwitch(tabName);
 
     // Update tab buttons
@@ -1234,13 +1286,13 @@ switchTab = function(tabName) {
         tab.classList.remove('active');
     });
     document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-    
+
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
     document.getElementById(tabName + 'Tab').classList.add('active');
-    
+
     // Load content
     if (tabName === 'browse') {
         loadBrowseContent();
@@ -1264,7 +1316,7 @@ async function loadPendingUsers() {
     try {
         const response = await fetch('/api/admin/users/pending');
         if (!response.ok) return;
-        
+
         const users = await response.json();
         renderPendingUsers(users);
     } catch (error) {
@@ -1275,12 +1327,12 @@ async function loadPendingUsers() {
 function renderPendingUsers(users) {
     const container = document.getElementById('pendingUsersList');
     if (!container) return;
-    
+
     if (users.length === 0) {
         container.innerHTML = '<p class="empty-text">暂无待审核用户</p>';
         return;
     }
-    
+
     container.innerHTML = users.map(user => `
         <div class="pending-user-item">
             <div class="user-info">
@@ -1300,7 +1352,7 @@ async function approveUser(userId) {
         const response = await fetch(`/api/admin/users/${userId}/approve`, {
             method: 'POST'
         });
-        
+
         if (response.ok) {
             showToast('用户已通过审核');
             loadAdminData();
@@ -1315,12 +1367,12 @@ async function approveUser(userId) {
 
 async function rejectUser(userId) {
     if (!confirm('确定要拒绝此用户吗？')) return;
-    
+
     try {
         const response = await fetch(`/api/admin/users/${userId}/reject`, {
             method: 'POST'
         });
-        
+
         if (response.ok) {
             showToast('用户已被拒绝');
             loadAdminData();
@@ -1342,7 +1394,7 @@ async function loadTeams() {
     try {
         const response = await fetch('/api/admin/teams');
         if (!response.ok) return;
-        
+
         allTeams = await response.json();
         renderTeams(allTeams);
     } catch (error) {
@@ -1353,12 +1405,12 @@ async function loadTeams() {
 function renderTeams(teams) {
     const container = document.getElementById('teamsList');
     if (!container) return;
-    
+
     if (teams.length === 0) {
         container.innerHTML = '<p class="empty-text">暂无用户组</p>';
         return;
     }
-    
+
     container.innerHTML = teams.map(team => `
         <div class="team-item">
             <div class="team-info">
@@ -1380,21 +1432,21 @@ function showCreateTeamModal() {
 
 async function createTeam() {
     const name = document.getElementById('newTeamName').value.trim();
-    
+
     if (!name) {
         showToast('请输入用户组名称', 'error');
         return;
     }
-    
+
     try {
         const response = await fetch('/api/admin/teams', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             showToast('用户组创建成功');
             closeModal('createTeamModal');
@@ -1410,14 +1462,14 @@ async function createTeam() {
 async function editTeam(teamId, currentName) {
     const newName = prompt('请输入新的用户组名称', currentName);
     if (!newName || newName.trim() === currentName) return;
-    
+
     try {
         const response = await fetch(`/api/admin/teams/${teamId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newName.trim() })
         });
-        
+
         if (response.ok) {
             showToast('用户组更新成功');
             loadAdminData();
@@ -1432,12 +1484,12 @@ async function editTeam(teamId, currentName) {
 
 async function deleteTeam(teamId) {
     if (!confirm('确定要删除此用户组吗？组内用户将被移出该组。')) return;
-    
+
     try {
         const response = await fetch(`/api/admin/teams/${teamId}`, {
             method: 'DELETE'
         });
-        
+
         if (response.ok) {
             showToast('用户组已删除');
             loadAdminData();
@@ -1572,7 +1624,7 @@ async function loadAllUsers() {
     try {
         const response = await fetch('/api/admin/users');
         if (!response.ok) return;
-        
+
         const users = await response.json();
         renderAllUsers(users);
     } catch (error) {
@@ -1583,13 +1635,13 @@ async function loadAllUsers() {
 function renderAllUsers(users) {
     const tbody = document.querySelector('#usersTable tbody');
     if (!tbody) return;
-    
+
     const statusMap = {
         'pending': '<span class="status-badge pending">待审核</span>',
         'approved': '<span class="status-badge approved">已通过</span>',
         'rejected': '<span class="status-badge rejected">已拒绝</span>'
     };
-    
+
     tbody.innerHTML = users.map(user => `
         <tr>
             <td>${escapeHtml(user.username)}</td>
@@ -1610,10 +1662,10 @@ function renderAllUsers(users) {
 function showAssignTeamModal(userId, username, currentTeamId) {
     document.getElementById('assignUserId').value = userId;
     document.getElementById('assignUserName').textContent = `为用户 "${username}" 分配用户组:`;
-    
+
     const select = document.getElementById('assignTeamSelect');
     select.innerHTML = '<option value="">无用户组</option>';
-    
+
     allTeams.forEach(team => {
         const option = document.createElement('option');
         option.value = team.id;
@@ -1623,23 +1675,23 @@ function showAssignTeamModal(userId, username, currentTeamId) {
         }
         select.appendChild(option);
     });
-    
+
     showModal('assignTeamModal');
 }
 
 async function assignTeam() {
     const userId = document.getElementById('assignUserId').value;
     const teamId = document.getElementById('assignTeamSelect').value || null;
-    
+
     try {
         const response = await fetch(`/api/admin/users/${userId}/team`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ team_id: teamId ? parseInt(teamId) : null })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             showToast('用户组分配成功');
             closeModal('assignTeamModal');
@@ -1654,12 +1706,12 @@ async function assignTeam() {
 
 async function deleteUser(userId) {
     if (!confirm('确定要删除此用户吗？')) return;
-    
+
     try {
         const response = await fetch(`/api/admin/users/${userId}`, {
             method: 'DELETE'
         });
-        
+
         if (response.ok) {
             showToast('用户已删除');
             loadAdminData();
