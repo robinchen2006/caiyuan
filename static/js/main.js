@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) {
+        return;
+    }
+
     if (window.innerWidth <= 768) {
         if (getComputedStyle(sidebar).display === 'none') {
             sidebar.style.display = 'block';
@@ -58,6 +62,10 @@ function toggleGroupList() {
 // Reset sidebar visibility on resize
 window.addEventListener('resize', function () {
     const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) {
+        return;
+    }
+
     if (window.innerWidth > 768) {
         sidebar.style.display = ''; // Remove inline style to revert to CSS
     } else {
@@ -71,6 +79,10 @@ window.addEventListener('resize', function () {
 // Run on load to set initial state correctly if starting on mobile
 window.addEventListener('load', function () {
     const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) {
+        return;
+    }
+
     if (window.innerWidth <= 768) {
         sidebar.style.display = 'none';
     }
