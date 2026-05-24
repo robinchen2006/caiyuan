@@ -90,12 +90,12 @@ body {
 /* Form Styles */
 .form-group {
     margin: 0;
-    padding-bottom: 10px;
+    padding-bottom: 3px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 3px;
     font-weight: 500;
     color: #555;
 }
@@ -121,12 +121,12 @@ body {
 
 .form-group textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 80px;
 }
 
 .form-row {
     display: flex;
-    gap: 20px;
+    gap: 10px;
 }
 
 .form-row .form-group {
@@ -414,9 +414,12 @@ body {
     padding: 0;
     border: none;
     background: none;
-    font-size: 0.9rem; /* Same as the hint text */
-    line-height: normal; /* Normal line height */
-    color: var(--primary-color); /* Make it look actionable */
+    font-size: 0.9rem;
+    /* Same as the hint text */
+    line-height: normal;
+    /* Normal line height */
+    color: var(--primary-color);
+    /* Make it look actionable */
     display: flex;
     align-items: center;
     gap: 5px;
@@ -525,24 +528,28 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
-    height: 100%; /* Ensure spans fill height if needed */
+    height: 100%;
+    /* Ensure spans fill height if needed */
 }
 
 .note-card-actions {
     display: flex;
     gap: 10px;
     align-items: center;
-    height: auto; /* Allow natural height */
+    height: auto;
+    /* Allow natural height */
 }
 
 .note-card-actions .btn {
     padding: 0 10px;
     font-size: 0.9rem;
-    line-height: 1.6; /* Match body line-height */
+    line-height: 1.6;
+    /* Match body line-height */
     height: auto;
     display: inline-flex;
     align-items: center;
-    border: 1px solid var(--border-color); /* Ensure border is visible but thin */
+    border: 1px solid var(--border-color);
+    /* Ensure border is visible but thin */
 }
 
 .note-card-body {
@@ -947,7 +954,7 @@ body {
     .main-content {
         flex-direction: column;
     }
-    
+
     .sidebar {
         width: 100%;
         height: auto;
@@ -955,50 +962,53 @@ body {
         border-right: none;
         border-bottom: 1px solid var(--border-color);
     }
-    
+
     .form-row {
         flex-direction: column;
         gap: 0;
     }
-    
+
     .header {
         padding: 15px 20px;
         flex-wrap: wrap;
     }
-    
+
     .header-left {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     /* Removed .team-badge style as it is now in header-right which handles layout */
-    
+
     .header-right {
         flex-wrap: wrap;
         gap: 10px;
     }
-    
+
     .content {
         padding: 20px;
     }
-    
+
     .note-card-images {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
-    
+
     .users-table {
         font-size: 0.85rem;
     }
-    
+
     .users-table th,
     .users-table td {
         padding: 8px;
     }
 }
+
 @media (max-width: 768px) {
+
     /* Mobile Base Styles */
     :root {
-        font-size: 14px; /* Smaller base font size */
+        font-size: 14px;
+        /* Smaller base font size */
     }
 
     /* Header Adjustments */
@@ -1020,7 +1030,8 @@ body {
     }
 
     .mobile-menu-btn {
-        display: block !important; /* Show toggle button */
+        display: block !important;
+        /* Show toggle button */
         background: none;
         border: none;
         font-size: 1.5rem;
@@ -1045,18 +1056,20 @@ body {
         border-right: none;
         border-bottom: 1px solid var(--border-color);
         padding: 10px 15px;
-        display: none; /* Hidden by default */
+        display: none;
+        /* Hidden by default */
     }
 
     .sidebar.active {
-        display: block; /* Show when active */
+        display: block;
+        /* Show when active */
     }
 
     .sidebar-header {
         margin-bottom: 10px;
         padding-bottom: 10px;
     }
-    
+
     .sidebar-header h2 {
         font-size: 1rem;
     }
@@ -1076,7 +1089,8 @@ body {
     .tabs {
         overflow-x: auto;
         white-space: nowrap;
-        padding-bottom: 5px; /* Scrollbar space */
+        padding-bottom: 5px;
+        /* Scrollbar space */
     }
 
     .tab {
@@ -1091,11 +1105,12 @@ body {
     }
 
     .note-card-meta {
-        font-size: 0.8rem; /* Smaller font for meta info */
+        font-size: 0.8rem;
+        /* Smaller font for meta info */
         gap: 10px;
-        flex-wrap: wrap; 
+        flex-wrap: wrap;
     }
-    
+
     .card {
         padding: 15px;
     }
@@ -1151,7 +1166,7 @@ body {
         justify-content: space-between;
         align-items: center;
     }
-    
+
     .sidebar-title-row {
         width: auto;
         margin-bottom: 0;
@@ -1167,13 +1182,17 @@ body {
 
 /* Header buttons: Equal size and 80% smaller */
 .btn-header {
-    font-size: 0.8rem; /* 80% of 1rem base */
-    padding: 5px 10px; /* Reduced padding */
-    min-width: 80px;   /* Ensure minimum width for consistency */
+    font-size: 0.8rem;
+    /* 80% of 1rem base */
+    padding: 5px 10px;
+    /* Reduced padding */
+    min-width: 80px;
+    /* Ensure minimum width for consistency */
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    height: 30px; /* Fixed height for consistency */
+    height: 30px;
+    /* Fixed height for consistency */
 }
 
 /* Note Form: Date and Category inline */
@@ -1186,7 +1205,8 @@ body {
 #noteForm .form-row .form-group label {
     margin-bottom: 0;
     white-space: nowrap;
-    min-width: 40px; /* Ensure labels align somewhat if needed, though '����' and 'Ʒ��' are short */
+    min-width: 40px;
+    /* Ensure labels align somewhat if needed, though '����' and 'Ʒ��' are short */
 }
 
 #noteForm .form-row .form-group input,
@@ -1194,7 +1214,7 @@ body {
     flex: 1;
 }
 
-/* Upload button styles removed here to clean up */ 
+/* Upload button styles removed here to clean up */
 /* Removed shrinking button styles again */
 
 
@@ -1202,24 +1222,29 @@ body {
 
 /* 1. Header Buttons: Equal size & smaller */
 .btn-header {
-    font-size: 0.8rem !important; /* Force override */
-    padding: 0 10px !important;    /* Smaller padding */
+    font-size: 0.8rem !important;
+    /* Force override */
+    padding: 0 10px !important;
+    /* Smaller padding */
     min-width: 70px !important;
     height: 28px !important;
-    line-height: 28px !important;  /* Vertically center text */
+    line-height: 28px !important;
+    /* Vertically center text */
     display: inline-block !important;
     text-align: center;
 }
 
 /* 2. Record Note Form: Inline date/category */
 #noteForm .form-row {
-    gap: 5px !important; /* Reduce gap between form groups */
+    gap: 5px !important;
+    /* Reduce gap between form groups */
 }
 
 #noteForm .form-row .form-group {
     display: flex !important;
     align-items: center !important;
-    gap: 5px !important; /* Reduce gap between label and input */
+    gap: 5px !important;
+    /* Reduce gap between label and input */
     margin-bottom: 10px;
 }
 
@@ -1239,4 +1264,3 @@ body {
 
 /* 3. Image Upload Button */
 /* Removed shrinking styles as user requested enlargement */
-
