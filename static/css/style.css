@@ -232,7 +232,7 @@ body {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 6px;
     font-size: 0.85rem;
 }
 
@@ -982,7 +982,7 @@ body {
 
     .header-right {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 6px;
     }
 
     .content {
@@ -1221,17 +1221,25 @@ body {
 /* --- Final Styles for Request --- */
 
 /* 1. Header Buttons: Equal size & smaller */
+.header-menu-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .btn-header {
     font-size: 0.8rem !important;
     /* Force override */
-    padding: 0 10px !important;
+    padding: 0 8px !important;
     /* Smaller padding */
-    min-width: 70px !important;
+    min-width: auto !important;
+    width: auto !important;
     height: 28px !important;
     line-height: 28px !important;
     /* Vertically center text */
     display: inline-block !important;
     text-align: center;
+    white-space: nowrap;
 }
 
 /* 2. Record Note Form: Inline date/category */

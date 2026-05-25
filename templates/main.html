@@ -24,8 +24,10 @@
                         class="role-badge admin">管理员</span>{% endif %}</span>
                 <span id="teamBadge" class="team-badge" style="display: none;"></span>
                 <span id="projectBadge" class="team-badge" style="display: none;"></span>
-                <button class="btn btn-sm btn-outline btn-header" onclick="showSwitchProjectModal()">项目</button>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline btn-header">退出</a>
+                <div class="header-menu-actions">
+                    <button class="btn btn-sm btn-outline btn-header" onclick="showSwitchProjectModal()">项目</button>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline btn-header">退出</a>
+                </div>
             </div>
         </header>
 
