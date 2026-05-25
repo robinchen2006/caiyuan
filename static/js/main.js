@@ -472,7 +472,16 @@ async function processNoteFiles(files) {
                 try {
                     await new Promise(resolve => setTimeout(resolve, 0));
                     const thumbnail = await createThumbnail(file);
-                    selectedFiles.push({ file, thumbnail });
+                    // Create a stable copy of the file data so iOS Safari cannot invalidate it
+                    // when the input element's value is cleared after selection.
+                    let stableFile = file;
+                    try {
+                        const buf = await file.arrayBuffer();
+                        stableFile = new File([buf], file.name, { type: file.type, lastModified: file.lastModified });
+                    } catch (copyErr) {
+                        console.warn('File copy failed, using original:', copyErr);
+                    }
+                    selectedFiles.push({ file: stableFile, thumbnail });
                 } catch (err) {
                     console.error('Thumbnail error', err);
                     selectedFiles.push({ file, thumbnail: URL.createObjectURL(file) });
@@ -510,7 +519,17 @@ async function processEditFiles(files) {
                         break;
                     }
 
-                    editSelectedFiles.push({ file, thumbnail });
+                    // Create a stable copy of the file data so iOS Safari cannot invalidate it
+                    // when the input element's value is cleared after selection.
+                    let stableFile = file;
+                    try {
+                        const buf = await file.arrayBuffer();
+                        stableFile = new File([buf], file.name, { type: file.type, lastModified: file.lastModified });
+                    } catch (copyErr) {
+                        console.warn('File copy failed, using original:', copyErr);
+                    }
+
+                    editSelectedFiles.push({ file: stableFile, thumbnail });
                 } catch (err) {
                     if (!document.getElementById('editNoteModal').classList.contains('show')) {
                         break;
@@ -640,7 +659,8 @@ function generateUUID() {
 }
 
 async function uploadChunkedFile(file, onProgress) {
-    const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB Chunk
+    // Use smaller chunks on mobile to keep each upload request short on slow connections
+    const CHUNK_SIZE = isMobileDevice() ? 1 * 1024 * 1024 : 4 * 1024 * 1024; // 1MB mobile / 4MB desktop
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
     // UUID for this file upload session
@@ -700,6 +720,7 @@ async function uploadChunkedFile(file, onProgress) {
  * @returns {Promise<{uploadedChunks: any[], smallFiles: File[]}>}
  */
 async function processFilesForUpload(files) {
+    const onMobile = isMobileDevice();
     const CHUNK_THRESHOLD = 5 * 1024 * 1024; // 5MB
     const MAX_BATCH_SIZE = 10 * 1024 * 1024; // 10MB limit for non-chunked batch
     const uploadedChunks = [];
@@ -707,10 +728,11 @@ async function processFilesForUpload(files) {
     let totalSmallSize = 0;
 
     for (const file of files) {
-        // Determine if we should chunk this file
-        // 1. It is individually large (>5MB)
-        // 2. OR adding it to the batch would exceed the safe batch size
-        if (file.size > CHUNK_THRESHOLD || (totalSmallSize + file.size > MAX_BATCH_SIZE)) {
+        // On mobile, always use chunked upload so that the final note-save request
+        // carries only small text/reference data (not raw image bytes).  This avoids
+        // large single-request uploads that frequently fail on slow mobile connections.
+        // On desktop: chunk large files (>5MB) or batches that exceed the batch limit.
+        if (onMobile || file.size > CHUNK_THRESHOLD || (totalSmallSize + file.size > MAX_BATCH_SIZE)) {
             showToast(`正在分块上传: ${file.name}...`, 'info');
             // This might throw, caller should handle try/catch
             const result = await uploadChunkedFile(file);
